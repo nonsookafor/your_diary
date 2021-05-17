@@ -36,44 +36,32 @@
 	<!-- main -->
 	<div class="main-w3layouts wrapper">
         <h1><br>Your Diary</h1><br>
-        <h2>Create your Account</h2>
+        <h2>These are your records</h2>
 		<div class="main-agileinfo">
-			<div class="agileits-top">
-				<form action="#" method="POST">
-					<input class="text" type="text" name="Username" placeholder="Username" required="">
-					<input class="text email" type="email" name="email" placeholder="Email" required="">
-					<input class="text" type="password" name="password" placeholder="Password" required="">
-					<div class="wthree-text">
-						<label class="anim">
-							<input type="checkbox" class="checkbox" required="">
-							<span>I Agree To The Terms & Conditions</span>
-						</label>
-						<div class="clear"> </div>
-					</div>
-					<input type="submit" value="SIGNUP">
-				</form>
-				<p>I have an Account? <a href="/signin"> Login Now!</a></p>
-			</div>
+			<table class="table">
+                <div>
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">Email</th>
+                            <th scope="col">Diary</th>
+                            <th scope="col">Date</th>
+                        </tr>
+                    </thead>
+                </div>
+                <div>
+                    <tbody>
+                        {% for name in names %}
+                            <tr>
+                                <td>{{ name.email }}</td>
+                                <td>{{ name.diary }}</td>
+                                <td>{{ name.date }}</td>
+                            </tr>
+                        {% endfor %}
+                    
+                    </tbody>
+                </div>
+            </table>
 		</div>
-		<!-- copyright -->
-		<div class="first">
-            <p>Fill your paper with the breathings of your heart @ William Wodrdsworth</p>
-			<p>© 2018 Colorlib Signup Form. All rights reserved | Design by <a href="https://colorlib.com/" target="_blank">Colorlib</a></p>
-		</div>
-		<!-- //copyright -->
-		<ul class="colorlib-bubbles">
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-		</ul>
-	</div>
-	<!-- //main -->
+		
 </body>
 </html>

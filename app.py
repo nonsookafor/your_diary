@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user
 from datetime import datetime
@@ -19,7 +19,7 @@ app.secret_key = "secret_key"
 
 
 
-class Signed(db.Model):
+class Users(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     email = db.Column(db.String(80))
     password = db.Column(db.String(80))
@@ -31,12 +31,12 @@ class Signed(db.Model):
         self.date = date
 
     def __repr__(self):
-        return U'<Signed%r' % self.email
-admin.add_view(ModelView(Signed, db.session))
+        return U'<Users%r' % self.email
+admin.add_view(ModelView(Users, db.session))
 
 
 
-class User(db.Model):
+class Their_Diaries(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     email = db.Column(db.String(80))
     date = db.Column(db.DateTime, default = datetime.now(), nullable = True)
@@ -48,28 +48,37 @@ class User(db.Model):
         self.diary = diary
 
     def __repr__(self):
-        return U'<User%r' % self.email
-admin.add_view(ModelView(User, db.session))
+        return U'<Their_Diaries%r' % self.email
+admin.add_view(ModelView(Their_Diaries, db.session))
 
 
 
 @app.route("/", methods = ["POST", "GET"])
 def index():
+    if "email" in session:
+        session.pop("email", None)
     return render_template("index.html")
 
 
 
-@app.route("/home/<email>", methods = ["POST", "GET"])
-def home(email):
+@app.route("/home/", methods = ["POST", "GET"])
+def home():
     if request.method == "GET":
-        return render_template("home.html")
+        if "email" in session:
+            return render_template("home.html")
+        else:
+            return redirect(url_for("signin"))
     else:
         diary = request.form['diary']
         the_diary = diary
-        user = User(email=email, date=datetime.now(), diary=the_diary)
-        db.session.add(user)
-        db.session.commit()
-        return redirect(url_for('home', email=email))
+        if "email" in session:
+            email = session["email"]
+            user = Their_Diaries(email=email, date=datetime.now(), diary=the_diary)
+            db.session.add(user)
+            db.session.commit()
+            return redirect(url_for('home'))
+        else:
+            return redirect(url_for("signin"))
 
 
 
@@ -80,7 +89,7 @@ def signup():
     else:
         email = request.form['email']
         password = request.form['password']
-        user = Signed(email=email, password=password, date = datetime.now())
+        user = Users(email=email, password=password, date = datetime.now())
         db.session.add(user)
         db.session.commit()
         return redirect(url_for("signin"))
@@ -94,12 +103,12 @@ def signin():
     else:
         email = request.form['email']
         password = request.form['password']
-        if Signed.query.filter_by(email = email).count() > 0:
-            signed = Signed.query.filter_by(email=email).first()
+        if Users.query.filter_by(email = email).count() > 0:
+            signed = Users.query.filter_by(email=email).first()
             print(signed)
             if signed.password == password:
-                print('\n\n\n\n\n', email, '\n', password)
-                return redirect(url_for('home', email=email))
+                session["email"] = email
+                return redirect(url_for('home'))
             else:
                 return redirect(url_for("signup"))
         else:
@@ -107,9 +116,20 @@ def signin():
 
 
 
-@app.route("/records")
+@app.route("/records", methods = ["GET"])
 def records():
-    return render_template("records.html")
+    if "email" in session:
+        email = session["email"]
+        if Their_Diaries.query.filter_by(email = email).count() > 0:
+            signed = Their_Diaries.query.filter_by(email = email).all()
+            print("\n\n\n\n", signed)
+            return render_template("records.html", names=signed, the_email=email)
+        else:
+            return redirect(url_for("home.html"))
+    else:
+        return redirect(url_for("signin"))
+
+
 
 
         
